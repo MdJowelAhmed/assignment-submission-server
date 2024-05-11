@@ -43,6 +43,23 @@ async function run() {
         const result=await assignmentsCollection.insertOne(assignment)
         res.send(result)
     })
+
+    app.put('/assignment/:id',async(req,res)=>{
+      const id = req.params.id;
+      const filter={_id: new ObjectId(id)}
+      const options = { upsert: true };
+      const updateAssignment = req.body;
+
+      const updated={
+        $set:{
+          
+          ...updateAssignment
+        }
+      }
+      const result=await assignmentsCollection.updateOne(filter,updated,options)
+      res.send(result)
+    })
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
