@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config()
 const app=express();
@@ -29,6 +29,7 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const assignmentsCollection=client.db('assignmentsCreate').collection('assignments')
+    const submissionCollection=client.db('assignmentsCreate').collection('submission')
 
     await client.db("admin").command({ ping: 1 });
     app.get('/assignment', async(req,res)=>{
@@ -43,6 +44,14 @@ async function run() {
         const result=await assignmentsCollection.insertOne(assignment)
         res.send(result)
     })
+    app.get('/assignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await assignmentsCollection.findOne(query);
+      res.send(result);
+  })
+
+ 
 
     app.put('/assignment/:id',async(req,res)=>{
       const id = req.params.id;
@@ -59,6 +68,21 @@ async function run() {
       const result=await assignmentsCollection.updateOne(filter,updated,options)
       res.send(result)
     })
+
+    app.delete('/assignment/:id',async(req,res)=>{
+      const id=req.params.id
+      const query={_id: new ObjectId(id)}
+      const result=await assignmentsCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+    // assignment submission
+    app.post('/submission',async(req,res)=>{
+      const submit=req.body
+      const result=await submissionCollection.insertOne(submit)
+      res.send(result)
+  })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
