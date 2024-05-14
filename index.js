@@ -163,9 +163,10 @@ async function run() {
     app.get('/submit/:email',verifiedToken, async (req, res) => {
       // const email=req.body
       // console.log({ submitEmail: req.params.email })
-      // if(req.params.submitEmail !== req.user.email){
-      //   return res.status(403).send({message:'forbidden access'})
-      // }
+      console.log(req.user.email)
+      if(req.params.email !== req.user.email){
+        return res.status(403).send({message:'forbidden access'})
+      }
       let params={}
       if(req.params?.email){
         params={"submit.submitEmail":req.params.email}
@@ -177,7 +178,7 @@ async function run() {
     app.get('/submitted/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
-      const result = await assignmentsCollection.findOne(query);
+      const result = await submissionCollection.findOne(query);
       res.send(result);
     })
 
