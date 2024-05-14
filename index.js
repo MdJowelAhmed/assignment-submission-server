@@ -77,6 +77,11 @@ async function run() {
       .send({succuss:true})
     })
 
+    app.post('/logout',async(req,res)=>{
+      const user=req.body
+      res.clearCookie('token',{maxAge:0}).send({success:true})
+    })
+
 
     app.get('/assignment', async (req, res) => {
       console.log('took  took', req.cookies.token)
@@ -161,11 +166,11 @@ async function run() {
       // if(req.params.submitEmail !== req.user.email){
       //   return res.status(403).send({message:'forbidden access'})
       // }
-      // let params={}
-      // if(req.params?.email){
-      //   params={"submit.submitEmail":req.params.email}
-      // }
-      const result = await submissionCollection.find({"submit.submitEmail":req.params.email}).toArray()
+      let params={}
+      if(req.params?.email){
+        params={"submit.submitEmail":req.params.email}
+      }
+      const result = await submissionCollection.find(params).toArray()
       res.send(result)
     })
 
