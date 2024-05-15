@@ -12,8 +12,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      // "https://cardoctor-bd.web.app",
-      // "https://cardoctor-bd.firebaseapp.com",
+      "https://assignments-submission.web.app",
+      "https://assignments-submission.firebaseapp.com/",
     ],
     credentials: true,
   })
@@ -60,13 +60,13 @@ async function run() {
     const assignmentsCollection = client.db('assignmentsCreate').collection('assignments')
     const submissionCollection = client.db('assignmentsCreate').collection('submission')
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
 
     // auth related 
     app.post('/jwt', (req,res)=>{
       const user=req.body
       console.log(user)
-      const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET , {expiresIn: '1h'})
+      const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET , {expiresIn: "1h"})
       res
       .cookie('token',token,{
           httpOnly: true,
@@ -77,11 +77,16 @@ async function run() {
       .send({succuss:true})
     })
 
-    app.post('/logout',async(req,res)=>{
-      const user=req.body
-      res.clearCookie('token',{maxAge:0}).send({success:true})
+    app.get('/logout', (req, res) => {
+      res
+        .clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          maxAge: 0,
+        })
+        .send({ success: true })
     })
-
 
     app.get('/assignment', async (req, res) => {
       console.log('took  took', req.cookies.token)
@@ -154,7 +159,7 @@ async function run() {
       // }
      
       // const alreadySubmit=await submissionCollection.findOne(query)
-      // return console.log(alreadySubmit)
+      // return console.log('double hobe na', alreadySubmit)
 
       const result = await submissionCollection.insertOne(submit)
       res.send(result)
