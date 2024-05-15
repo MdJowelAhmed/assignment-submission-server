@@ -63,30 +63,66 @@ async function run() {
     // await client.db("admin").command({ ping: 1 });
 
     // auth related 
-    app.post('/jwt', (req,res)=>{
-      const user=req.body
-      console.log(user)
-      const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET , {expiresIn: "1h"})
-      res
-      .cookie('token',token,{
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    // app.post('/jwt', (req,res)=>{
+    //   const user=req.body
+    //   console.log(user)
+    //   const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET , {expiresIn: "1h"})
+    //   res
+    //   .cookie('token',token,{
+    //       httpOnly: true,
+    //       secure: process.env.NODE_ENV === "production",
+    //       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
        
-      })
-      .send({succuss:true})
-    })
+    //   })
+    //   .send({succuss:true})
+    // 
 
-    app.get('/logout', (req, res) => {
+    app.post('/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '365d',
+      })
       res
-        .clearCookie('token', {
+        .cookie('token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-          maxAge: 0,
         })
         .send({ success: true })
     })
+
+    app.get('/logout', async (req, res) => {
+      try {
+        res
+          .clearCookie('token', {
+            maxAge: 0,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          })
+          .send({ success: true })
+        console.log('Logout successful')
+      } catch (err) {
+        res.status(500).send(err)
+      }
+    })
+
+
+    // app.get('/logout', (req, res) => {
+    //   res
+    //     .clearCookie('token', {
+    //       httpOnly: true,
+    //       secure: process.env.NODE_ENV === 'production',
+    //       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    //       maxAge: 0,
+    //     })
+    //     .send({ success: true })
+    // })
+
+    // app.post('/logout',async(req,res)=>{
+    //   const user=req.body
+    //   res.clearCookie('token',{maxAge:0}).send({success:true})
+    // })
+
 
     app.get('/assignment', async (req, res) => {
       console.log('took  took', req.cookies.token)
