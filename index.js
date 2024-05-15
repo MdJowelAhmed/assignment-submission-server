@@ -181,11 +181,23 @@ async function run() {
       const result = await submissionCollection.findOne(query);
       res.send(result);
     })
+    // update 
+    app.patch('/submitted/:id', async (req, res) => {
+      const id = req.params.id;
+      const status = req.body
+      const query = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+      const updateDoc = {
+        $set: status,
+      }
+      const result = await submissionCollection.updateOne(query,updateDoc,options);
+      res.send(result);
+    })
 
-    app.get('/submission/:status', async (req, res) => {
+    app.get('/pending', async (req, res) => {
       // const email=req.body
       console.log({ status: req.params.status })
-      const result = await submissionCollection.find({ status: req.params.status }).toArray()
+      const result = await submissionCollection.find({ status: "pending" }).toArray()
       res.send(result)
     })
 
