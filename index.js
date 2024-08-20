@@ -59,23 +59,10 @@ async function run() {
 
     const assignmentsCollection = client.db('assignmentsCreate').collection('assignments')
     const submissionCollection = client.db('assignmentsCreate').collection('submission')
+    const studyCollection = client.db('assignmentsCreate').collection('material')
 
     // await client.db("admin").command({ ping: 1 });
 
-    // auth related 
-    // app.post('/jwt', (req,res)=>{
-    //   const user=req.body
-    //   console.log(user)
-    //   const token=jwt.sign(user, process.env.ACCESS_TOKEN_SECRET , {expiresIn: "1h"})
-    //   res
-    //   .cookie('token',token,{
-    //       httpOnly: true,
-    //       secure: process.env.NODE_ENV === "production",
-    //       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-       
-    //   })
-    //   .send({succuss:true})
-    // 
 
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -125,10 +112,18 @@ async function run() {
 
 
     app.get('/assignment', async (req, res) => {
-      console.log('took  took', req.cookies.token)
-      const cursor = assignmentsCollection.find()
+      const size=parseInt(req.query.size)
+      const page=parseInt(req.query.page)-1
+      console.log(size,page)
+      const cursor = assignmentsCollection.find().skip(page * size).limit(size)
       const result = await cursor.toArray()
       res.send(result)
+    })
+
+    // pagination
+    app.get('/countAssignments',async(req,res)=>{
+      const count=await assignmentsCollection.countDocuments()
+      res.send({count})
     })
 
     app.post('/assignment', async (req, res) => {
@@ -189,14 +184,6 @@ async function run() {
 
     app.post('/submission', async (req, res) => {
       const submit = req.body
-      // const query={
-      //   email:submit.email,
-      //   AssignmentId:submit.AssignmentId
-      // }
-     
-      // const alreadySubmit=await submissionCollection.findOne(query)
-      // return console.log('double hobe na', alreadySubmit)
-
       const result = await submissionCollection.insertOne(submit)
       res.send(result)
     })
@@ -239,6 +226,14 @@ async function run() {
       // const email=req.body
       console.log({ status: req.params.status })
       const result = await submissionCollection.find({ status: "pending" }).toArray()
+      res.send(result)
+    })
+
+    // study material 
+
+    app.get('/study', async (req, res) => {
+      const cursor = studyCollection.find()
+      const result = await cursor.toArray()
       res.send(result)
     })
 
