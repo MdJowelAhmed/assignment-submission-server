@@ -60,6 +60,7 @@ async function run() {
     const assignmentsCollection = client.db('assignmentsCreate').collection('assignments')
     const submissionCollection = client.db('assignmentsCreate').collection('submission')
     const studyCollection = client.db('assignmentsCreate').collection('material')
+    const instructorsCollection = client.db('assignmentsCreate').collection('instructors')
 
     // await client.db("admin").command({ ping: 1 });
 
@@ -93,24 +94,6 @@ async function run() {
       }
     })
 
-
-    // app.get('/logout', (req, res) => {
-    //   res
-    //     .clearCookie('token', {
-    //       httpOnly: true,
-    //       secure: process.env.NODE_ENV === 'production',
-    //       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-    //       maxAge: 0,
-    //     })
-    //     .send({ success: true })
-    // })
-
-    // app.post('/logout',async(req,res)=>{
-    //   const user=req.body
-    //   res.clearCookie('token',{maxAge:0}).send({success:true})
-    // })
-
-
     app.get('/assignment', async (req, res) => {
       const size=parseInt(req.query.size)
       const page=parseInt(req.query.page)-1
@@ -141,7 +124,7 @@ async function run() {
 
 
     // assignment filter 
-    app.get('/assignments', async (req, res) => {
+    app.get('/assignment', async (req, res) => {
       const filter = req.query.filter
      
       let query = {}
@@ -189,8 +172,6 @@ async function run() {
     })
 
     app.get('/submit/:email',verifiedToken, async (req, res) => {
-      // const email=req.body
-      // console.log({ submitEmail: req.params.email })
       console.log(req.user.email)
       if(req.params.email !== req.user.email){
         return res.status(403).send({message:'forbidden access'})
@@ -233,6 +214,12 @@ async function run() {
 
     app.get('/study', async (req, res) => {
       const cursor = studyCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+    
+    app.get('/instructors', async (req, res) => {
+      const cursor = instructorsCollection.find()
       const result = await cursor.toArray()
       res.send(result)
     })
