@@ -61,6 +61,7 @@ async function run() {
     const submissionCollection = client.db('assignmentsCreate').collection('submission')
     const studyCollection = client.db('assignmentsCreate').collection('material')
     const instructorsCollection = client.db('assignmentsCreate').collection('instructors')
+    const reviewsCollection = client.db('assignmentsCreate').collection('review')
 
     // await client.db("admin").command({ ping: 1 });
 
@@ -223,6 +224,12 @@ async function run() {
       const result = await cursor.toArray()
       res.send(result)
     })
+
+     // GET API to retrieve reviews
+     app.get('/reviews', async (req, res) => {
+      const reviews = await reviewsCollection.find().toArray();
+      res.send(reviews)
+  });
 
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
