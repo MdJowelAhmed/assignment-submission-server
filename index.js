@@ -62,6 +62,7 @@ async function run() {
     const studyCollection = client.db('assignmentsCreate').collection('material')
     const instructorsCollection = client.db('assignmentsCreate').collection('instructors')
     const reviewsCollection = client.db('assignmentsCreate').collection('review')
+    const subscribeCollection = client.db('assignmentsCreate').collection('subscribe')
 
     // await client.db("admin").command({ ping: 1 });
 
@@ -242,6 +243,24 @@ async function run() {
       const reviews = await reviewsCollection.find().toArray();
       res.send(reviews)
     });
+
+
+    app.post('/subscribe', async (req, res) => {
+      const { email } = req.body;
+      if (!email) {
+          return res.status(400).send({ message: 'Email is required' });
+      }
+
+      // Check if email already exists
+      const existingSubscriber = await submissionCollection.findOne({ email });
+      if (existingSubscriber) {
+          return res.status(400).send({ message: 'Email already subscribed' });
+      }
+
+      // Add new subscriber
+      const result = await submissionCollection.insertOne({ email });
+      res.status(201).send({ message: 'Subscribed successfully', result });
+  });
 
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
