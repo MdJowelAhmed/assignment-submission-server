@@ -1,7 +1,7 @@
 const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const jwt=require('jsonwebtoken')
-const cookieParser=require('cookie-parser')
+const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 const cors = require('cors');
 require('dotenv').config()
 const app = express();
@@ -33,21 +33,21 @@ const client = new MongoClient(uri, {
   }
 });
 
-const verifiedToken=async(req,res,next)=>{
-  const token=req.cookies.token;
-  console.log('value of token from middle were' ,token)
-  if(!token){
-    return res.status(401).send({message:'unauthorized access'})
+const verifiedToken = async (req, res, next) => {
+  const token = req.cookies.token;
+  console.log('value of token from middle were', token)
+  if (!token) {
+    return res.status(401).send({ message: 'unauthorized access' })
   }
-  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
-    if(err=>{
-      return res.status(401).send({message:'unauthorized access'})
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err => {
+      return res.status(401).send({ message: 'unauthorized access' })
     })
-    console.log('from decoded',decoded)
-    req.user=decoded
+      console.log('from decoded', decoded)
+    req.user = decoded
     next()
   })
-  
+
 }
 
 async function run() {
@@ -96,18 +96,30 @@ async function run() {
     })
 
     app.get('/assignment', async (req, res) => {
-      const size=parseInt(req.query.size)
-      const page=parseInt(req.query.page)-1
-      console.log(size,page)
-      const cursor = assignmentsCollection.find().skip(page * size).limit(size)
-      const result = await cursor.toArray()
-      res.send(result)
-    })
+      const size = parseInt(req.query.size); // Number of items per page
+      const page = parseInt(req.query.page) - 1; // Current page (0-based index)
+      const order = req.query.order === 'desc' ? -1 : 1; // Determine sort order: 'desc' for descending, 'asc' for ascending
+
+      console.log('Size:', size, 'Page:', page, 'Order:', order);
+
+      try {
+        const cursor = assignmentsCollection.find()
+          .sort({ date: order }) // Sort by date field
+          .skip(page * size)
+          .limit(size);
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        res.status(500).send({ error: 'Error fetching assignments' });
+      }
+    });
+
 
     // pagination
-    app.get('/countAssignments',async(req,res)=>{
-      const count=await assignmentsCollection.countDocuments()
-      res.send({count})
+    app.get('/countAssignments', async (req, res) => {
+      const count = await assignmentsCollection.countDocuments()
+      res.send({ count })
     })
 
     app.post('/assignment', async (req, res) => {
@@ -127,9 +139,9 @@ async function run() {
     // assignment filter 
     app.get('/assignment', async (req, res) => {
       const filter = req.query.filter
-     
+
       let query = {}
-     if(filter) query= {level:filter}
+      if (filter) query = { level: filter }
       const result = await assignmentsCollection
         .find(query).toArray()
       res.send(result)
@@ -172,14 +184,14 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/submit/:email',verifiedToken, async (req, res) => {
+    app.get('/submit/:email', verifiedToken, async (req, res) => {
       console.log(req.user.email)
-      if(req.params.email !== req.user.email){
-        return res.status(403).send({message:'forbidden access'})
+      if (req.params.email !== req.user.email) {
+        return res.status(403).send({ message: 'forbidden access' })
       }
-      let params={}
-      if(req.params?.email){
-        params={"submit.submitEmail":req.params.email}
+      let params = {}
+      if (req.params?.email) {
+        params = { "submit.submitEmail": req.params.email }
       }
       const result = await submissionCollection.find(params).toArray()
       res.send(result)
@@ -200,7 +212,7 @@ async function run() {
       const updateDoc = {
         $set: status,
       }
-      const result = await submissionCollection.updateOne(query,updateDoc,options);
+      const result = await submissionCollection.updateOne(query, updateDoc, options);
       res.send(result);
     })
 
@@ -218,18 +230,18 @@ async function run() {
       const result = await cursor.toArray()
       res.send(result)
     })
-    
+
     app.get('/instructors', async (req, res) => {
       const cursor = instructorsCollection.find()
       const result = await cursor.toArray()
       res.send(result)
     })
 
-     // GET API to retrieve reviews
-     app.get('/reviews', async (req, res) => {
+    // GET API to retrieve reviews
+    app.get('/reviews', async (req, res) => {
       const reviews = await reviewsCollection.find().toArray();
       res.send(reviews)
-  });
+    });
 
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
