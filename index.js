@@ -252,13 +252,13 @@ async function run() {
       }
 
       // Check if email already exists
-      const existingSubscriber = await submissionCollection.findOne({ email });
+      const existingSubscriber = await subscribeCollection.findOne({ email });
       if (existingSubscriber) {
           return res.status(400).send({ message: 'Email already subscribed' });
       }
 
       // Add new subscriber
-      const result = await submissionCollection.insertOne({ email });
+      const result = await subscribeCollection.insertOne({ email });
       res.status(201).send({ message: 'Subscribed successfully', result });
   });
 
