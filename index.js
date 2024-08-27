@@ -237,31 +237,37 @@ async function run() {
       const result = await cursor.toArray()
       res.send(result)
     })
-
-    // GET API to retrieve reviews
     app.get('/reviews', async (req, res) => {
-      const reviews = await reviewsCollection.find().toArray();
-      res.send(reviews)
-    });
-
+      const cursor = reviewsCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
 
     app.post('/subscribe', async (req, res) => {
-      const { email } = req.body;
-      if (!email) {
-          return res.status(400).send({ message: 'Email is required' });
+      const { name, email, message } = req.body;
+
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: 'All fields are required' });
       }
 
-      // Check if email already exists
-      const existingSubscriber = await subscribeCollection.findOne({ email });
-      if (existingSubscriber) {
-          return res.status(400).send({ message: 'Email already subscribed' });
+      try {
+        // Check for existing email
+        const existingSubscriber = await subscribeCollection.findOne({ email });
+
+        if (existingSubscriber) {
+          return res.status(400).json({ error: 'Email already subscribed!' });
+        }
+
+        // Insert new subscriber
+        await subscribeCollection.insertOne({ name, email, message });
+
+        res.status(200).json({ message: 'Subscription successful!' });
+      } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'An error occurred' });
       }
 
-      // Add new subscriber
-      const result = await subscribeCollection.insertOne({ email });
-      res.status(201).send({ message: 'Subscribed successfully', result });
-  });
-
+    });
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
